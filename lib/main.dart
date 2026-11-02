@@ -2,7 +2,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/theme.dart';
 import 'firebase_options.dart';
+import 'router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,14 +14,16 @@ Future<void> main() async {
   runApp(const ProviderScope(child: RepTrailApp()));
 }
 
-class RepTrailApp extends StatelessWidget {
+class RepTrailApp extends ConsumerWidget {
   const RepTrailApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp.router(
       title: 'RepTrail',
-      home: Scaffold(body: Center(child: Text('Firebase connected'))),
+      debugShowCheckedModeBanner: false,
+      theme: buildTheme(),
+      routerConfig: ref.watch(routerProvider),
     );
   }
 }
