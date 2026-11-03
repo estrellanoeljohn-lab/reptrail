@@ -8,7 +8,7 @@ import 'features/auth/welcome_screen.dart';
 import 'features/checkin/checkin_screen.dart';
 import 'features/goal/goal_setup_screen.dart';
 import 'features/home/home_screen.dart';
-import 'features/placeholders/placeholder_screens.dart';
+import 'features/placeholders/placeholder_screens.dart' as placeholders;
 import 'features/profile/profile_repository.dart';
 import 'shell/app_shell.dart';
 import 'features/compare/compare_screen.dart';
@@ -107,7 +107,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/me',
-                builder: (context, state) => const MeScreen(),
+                builder: (context, state) => const placeholders.MeScreen(),
               ),
             ],
           ),
