@@ -5,6 +5,31 @@ import '../../core/theme.dart';
 import '../auth/auth_providers.dart';
 import '../profile/profile_repository.dart';
 
+class _Soon extends StatelessWidget {
+  const _Soon(this.title, this.text);
+
+  final String title;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(
+        child: Text(text, style: const TextStyle(color: kMuted)),
+      ),
+    );
+  }
+}
+
+class LiftsScreen extends StatelessWidget {
+  const LiftsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) =>
+      const _Soon('Lifts', 'Lift log coming later');
+}
+
 class MeScreen extends ConsumerWidget {
   const MeScreen({super.key});
 
