@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,9 +5,12 @@ import 'package:go_router/go_router.dart';
 import 'features/auth/auth_providers.dart';
 import 'features/auth/create_account_screen.dart';
 import 'features/auth/welcome_screen.dart';
+import 'features/checkin/checkin_screen.dart';
 import 'features/goal/goal_setup_screen.dart';
 import 'features/home/home_screen.dart';
+import 'features/placeholders/placeholder_screens.dart';
 import 'features/profile/profile_repository.dart';
+import 'shell/app_shell.dart';
 
 class _RouterRefresh extends ChangeNotifier {
   void refresh() => notifyListeners();
@@ -17,7 +19,7 @@ class _RouterRefresh extends ChangeNotifier {
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = _RouterRefresh();
   ref.onDispose(refresh.dispose);
-    ref.listen(userProvider, (_, _) => refresh.refresh());
+  ref.listen(userProvider, (_, _) => refresh.refresh());
   ref.listen(profileProvider, (_, _) => refresh.refresh());
 
   return GoRouter(
@@ -57,8 +59,37 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const GoalSetupScreen(),
       ),
       GoRoute(
-        path: '/home',
-        builder: (context, state) => const HomeScreen(),
+        path: '/check-in',
+        builder: (context, state) => const CheckinScreen(),
+      ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, shell) => AppShell(navigationShell: shell),
+        branches: [
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: '/home',
+              builder: (context, state) => const HomeScreen(),
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: '/compare',
+              builder: (context, state) => const CompareScreen(),
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: '/lifts',
+              builder: (context, state) => const LiftsScreen(),
+            ),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: '/me',
+              builder: (context, state) => const MeScreen(),
+            ),
+          ]),
+        ],
       ),
     ],
   );
