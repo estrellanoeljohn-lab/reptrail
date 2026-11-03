@@ -11,6 +11,9 @@ import 'features/home/home_screen.dart';
 import 'features/placeholders/placeholder_screens.dart';
 import 'features/profile/profile_repository.dart';
 import 'shell/app_shell.dart';
+import 'features/compare/compare_screen.dart';
+import 'features/focus_area/focus_area_screen.dart';
+import 'features/lifts/lift_screens.dart';
 
 class _RouterRefresh extends ChangeNotifier {
   void refresh() => notifyListeners();
@@ -62,33 +65,52 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/check-in',
         builder: (context, state) => const CheckinScreen(),
       ),
+      GoRoute(
+        path: '/focus/:area',
+        builder: (context, state) =>
+            FocusAreaScreen(area: state.pathParameters['area']!),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppShell(navigationShell: shell),
         branches: [
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: '/home',
-              builder: (context, state) => const HomeScreen(),
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: '/compare',
-              builder: (context, state) => const CompareScreen(),
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: '/lifts',
-              builder: (context, state) => const LiftsScreen(),
-            ),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: '/me',
-              builder: (context, state) => const MeScreen(),
-            ),
-          ]),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/compare',
+                builder: (context, state) => const CompareScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/lifts',
+                builder: (context, state) => const LiftsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'log',
+                    builder: (context, state) => const LogLiftScreen(),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/me',
+                builder: (context, state) => const MeScreen(),
+              ),
+            ],
+          ),
         ],
       ),
     ],
