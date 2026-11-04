@@ -55,6 +55,7 @@ class _CompareScreenState extends ConsumerState<CompareScreen> {
   Widget build(BuildContext context) {
     final goal = ref.watch(profileProvider).value?.goal;
     final checkins = ref.watch(checkinsProvider).value ?? const <Checkin>[];
+    final hideWeight = ref.watch(hideWeightProvider);
 
     if (goal == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -84,9 +85,11 @@ class _CompareScreenState extends ConsumerState<CompareScreen> {
     final days = now.difference(then).inDays;
     final apart = days == 0
         ? 'Same day'
-        : days < 14
-            ? '$days days apart'
-            : '${(days / 7).round()} weeks apart';
+        : days == 1
+            ? '1 day apart'
+            : days < 14
+                ? '$days days apart'
+                : '${(days / 7).round()} weeks apart';
 
     _ChangeRow row(
       String label,
@@ -95,6 +98,7 @@ class _CompareScreenState extends ConsumerState<CompareScreen> {
       double? thenValue,
       double? nowValue, {
       bool last = false,
+      bool hide = false,
     }) {
       return _ChangeRow(
         label: label,
@@ -104,6 +108,7 @@ class _CompareScreenState extends ConsumerState<CompareScreen> {
         goal: goal.type,
         metric: metric,
         last: last,
+        hideValues: hide,
       );
     }
 
@@ -154,7 +159,8 @@ class _CompareScreenState extends ConsumerState<CompareScreen> {
                 children: [
                   row('Weight (7-day avg)', 'kg', Metric.weight,
                       trendOn(trend, then)?.weightKg,
-                      trendOn(trend, now)?.weightKg),
+                      trendOn(trend, now)?.weightKg,
+                      hide: hideWeight),
                   row('Waist', 'cm', Metric.waist,
                       at(then, (c) => c.waist), at(now, (c) => c.waist)),
                   row('Arm', 'cm', Metric.arm,
@@ -223,6 +229,7 @@ class _ChangeRow extends StatelessWidget {
     required this.goal,
     required this.metric,
     this.last = false,
+    this.hideValues = false,
   });
 
   final String label;
@@ -232,6 +239,7 @@ class _ChangeRow extends StatelessWidget {
   final GoalType goal;
   final Metric metric;
   final bool last;
+  final bool hideValues;
 
   @override
   Widget build(BuildContext context) {
@@ -260,8 +268,10 @@ class _ChangeRow extends StatelessWidget {
           ),
           Text(
             canCompare
-                ? '${thenValue!.toStringAsFixed(1)} → '
-                    '${nowValue!.toStringAsFixed(1)} $unit'
+                ? (hideValues
+                    ? '\u2022\u2022.\u2022 → \u2022\u2022.\u2022 $unit'
+                    : '${thenValue!.toStringAsFixed(1)} → '
+                        '${nowValue!.toStringAsFixed(1)} $unit')
                 : '–',
             style: const TextStyle(fontSize: 13, color: kMuted),
           ),

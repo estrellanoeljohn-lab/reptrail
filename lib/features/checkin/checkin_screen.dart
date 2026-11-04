@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/dates.dart';
 import '../../core/theme.dart';
+import '../profile/profile_repository.dart';
 import '../progress/checkin.dart';
 import '../progress/checkin_repository.dart';
 
@@ -145,6 +146,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final hideWeight = ref.watch(hideWeightProvider);
     final lastWeight = _all.where((c) => c.date.isBefore(_date)).lastOrNull;
 
     return Scaffold(
@@ -180,7 +182,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                     ),
                     decoration: InputDecoration(
                       labelText: 'Weight (kg)',
-                      helperText: lastWeight == null
+                      helperText: (lastWeight == null || hideWeight)
                           ? null
                           : 'Last check-in: ${lastWeight.weightKg.toStringAsFixed(1)} kg',
                     ),

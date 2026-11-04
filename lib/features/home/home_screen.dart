@@ -31,6 +31,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final goal = ref.watch(profileProvider).value?.goal;
     final checkins = ref.watch(checkinsProvider).value ?? const <Checkin>[];
+    final hideWeight = ref.watch(hideWeightProvider);
     if (goal == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -82,6 +83,7 @@ class HomeScreen extends ConsumerWidget {
               latestKg: latest?.weightKg,
               progress: progress,
               daysLeft: daysLeft,
+              hideWeight: hideWeight,
             ),
             const SizedBox(height: 12),
             _PaceCard(goal: goal, status: status, rate: rate, kg: weightForPace),
@@ -108,6 +110,11 @@ class HomeScreen extends ConsumerWidget {
               child: Text(
                 checkedInToday ? 'Edit today’s check-in' : 'Log check-in',
               ),
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton(
+              onPressed: () => context.push('/review'),
+              child: const Text('Weekly review'),
             ),
           ],
         ),
@@ -142,12 +149,14 @@ class _GoalCard extends StatelessWidget {
     required this.latestKg,
     required this.progress,
     required this.daysLeft,
+    required this.hideWeight,
   });
 
   final Goal goal;
   final double? latestKg;
   final double? progress;
   final int daysLeft;
+  final bool hideWeight;
 
   @override
   Widget build(BuildContext context) {
@@ -158,6 +167,18 @@ class _GoalCard extends StatelessWidget {
         : daysLeft < 14
             ? '$daysLeft days left'
             : '${(daysLeft / 7).round()} weeks left';
+
+    String progressText() {
+      if (progress! >= 1) {
+        return 'Goal reached. You can set a new goal in Me.';
+      }
+      if (hideWeight) {
+        return '${(progress! * 100).round()}% of the way to your goal';
+      }
+      return '${(progress! * total).toStringAsFixed(1)} of '
+          '${total.toStringAsFixed(1)} kg to your goal of '
+          '${goal.targetWeightKg.toStringAsFixed(1)} kg';
+    }
 
     return _Card(
       padding: 18,
@@ -194,14 +215,18 @@ class _GoalCard extends StatelessWidget {
             TextSpan(
               children: [
                 TextSpan(
-                  text: headline.toStringAsFixed(1),
+                  text: hideWeight
+                      ? '\u2022\u2022.\u2022'
+                      : headline.toStringAsFixed(1),
                   style: const TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 TextSpan(
-                  text: ' kg · from ${goal.startWeightKg.toStringAsFixed(1)}',
+                  text: hideWeight
+                      ? ' kg'
+                      : ' kg · from ${goal.startWeightKg.toStringAsFixed(1)}',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -229,14 +254,14 @@ class _GoalCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '${(progress! * total).toStringAsFixed(1)} of '
-              '${total.toStringAsFixed(1)} kg to your goal of '
-              '${goal.targetWeightKg.toStringAsFixed(1)} kg',
+              progressText(),
               style: const TextStyle(fontSize: 13, color: kMuted),
             ),
           ] else
             Text(
-              'Target weight: ${goal.targetWeightKg.toStringAsFixed(1)} kg',
+              hideWeight
+                  ? 'Target weight hidden'
+                  : 'Target weight: ${goal.targetWeightKg.toStringAsFixed(1)} kg',
               style: const TextStyle(fontSize: 13, color: kMuted),
             ),
         ],

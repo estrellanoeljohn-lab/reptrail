@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/dates.dart';
 import '../../core/theme.dart';
@@ -11,7 +12,10 @@ import 'pace.dart';
 const _focusOptions = ['Arms', 'Legs', 'Chest', 'Back', 'Core', 'Shoulders'];
 
 class GoalSetupScreen extends ConsumerStatefulWidget {
-  const GoalSetupScreen({super.key});
+  const GoalSetupScreen({super.key, this.editing = false});
+
+  /// True when changing an existing goal from the Me screen.
+  final bool editing;
 
   @override
   ConsumerState<GoalSetupScreen> createState() => _GoalSetupScreenState();
@@ -27,6 +31,19 @@ class _GoalSetupScreenState extends ConsumerState<GoalSetupScreen> {
   final Set<String> _focus = {};
   bool _saving = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    final goal = ref.read(profileProvider).value?.goal;
+    if (widget.editing && goal != null) {
+      _type = goal.type;
+      _current.text = goal.startWeightKg.toStringAsFixed(1);
+      _target.text = goal.targetWeightKg.toStringAsFixed(1);
+      _targetDate = goal.targetDate;
+      _focus.addAll(goal.focusAreas);
+    }
+  }
 
   @override
   void dispose() {
@@ -52,10 +69,10 @@ class _GoalSetupScreenState extends ConsumerState<GoalSetupScreen> {
     final target = _parse(v)!;
     if (current == null) return null;
     if (_type == GoalType.cut && target >= current) {
-      return 'Target must be lower than your current weight';
+      return 'Target must be lower than your starting weight';
     }
     if (_type == GoalType.bulk && target <= current) {
-      return 'Target must be higher than your current weight';
+      return 'Target must be higher than your starting weight';
     }
     return null;
   }
@@ -81,6 +98,9 @@ class _GoalSetupScreenState extends ConsumerState<GoalSetupScreen> {
     final uid = ref.read(authRepositoryProvider).currentUser?.uid;
     if (uid == null) return;
 
+    // When editing, keep the original start so progress keeps counting.
+    final keep = widget.editing ? ref.read(profileProvider).value?.goal : null;
+
     setState(() {
       _saving = true;
       _error = null;
@@ -90,14 +110,15 @@ class _GoalSetupScreenState extends ConsumerState<GoalSetupScreen> {
             uid,
             Goal(
               type: _type,
-              startWeightKg: _parse(_current.text)!,
+              startWeightKg: keep?.startWeightKg ?? _parse(_current.text)!,
               targetWeightKg: _parse(_target.text)!,
-              startDate: today,
+              startDate: keep?.startDate ?? today,
               targetDate: _targetDate,
               focusAreas: _focusOptions.where(_focus.contains).toList(),
             ),
           );
-      // The router moves you to Home once the goal is saved.
+      // When setting up for the first time, the router moves you to Home.
+      if (widget.editing && mounted) context.pop();
     } catch (_) {
       if (mounted) {
         setState(() => _error =
@@ -176,6 +197,7 @@ class _GoalSetupScreenState extends ConsumerState<GoalSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: widget.editing ? AppBar(title: const Text('Change goal')) : null,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -183,22 +205,24 @@ class _GoalSetupScreenState extends ConsumerState<GoalSetupScreen> {
             child: Form(
               key: _formKey,
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
+                padding: EdgeInsets.fromLTRB(24, widget.editing ? 8 : 32, 24, 32),
                 children: [
-                  const Text(
-                    'Set your goal',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: kText,
+                  if (!widget.editing) ...[
+                    const Text(
+                      'Set your goal',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: kText,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'We use this to tell you if you are on track.',
-                    style: TextStyle(fontSize: 15, color: kMuted, height: 1.5),
-                  ),
-                  const SizedBox(height: 22),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'We use this to tell you if you are on track.',
+                      style: TextStyle(fontSize: 15, color: kMuted, height: 1.5),
+                    ),
+                    const SizedBox(height: 22),
+                  ],
                   const Text(
                     'Goal type',
                     style: TextStyle(
@@ -236,11 +260,18 @@ class _GoalSetupScreenState extends ConsumerState<GoalSetupScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: _current,
+                          enabled: !widget.editing,
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
-                          decoration: const InputDecoration(
-                            labelText: 'Current weight (kg)',
+                          decoration: InputDecoration(
+                            labelText: widget.editing
+                                ? 'Starting weight (kg)'
+                                : 'Current weight (kg)',
+                            helperText: widget.editing
+                                ? 'Stays the same so your progress keeps counting.'
+                                : null,
+                            helperMaxLines: 2,
                           ),
                           validator: _validateWeight,
                           onChanged: (_) => setState(() {}),
@@ -316,7 +347,7 @@ class _GoalSetupScreenState extends ConsumerState<GoalSetupScreen> {
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Start tracking'),
+                        : Text(widget.editing ? 'Save changes' : 'Start tracking'),
                   ),
                 ],
               ),

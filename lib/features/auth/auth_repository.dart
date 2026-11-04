@@ -33,6 +33,9 @@ class AuthRepository {
   }
 
   Future<void> signOut() => _auth.signOut();
+
+  Future<void> sendPasswordReset(String email) =>
+      _auth.sendPasswordResetEmail(email: email.trim());
 }
 
 String authErrorMessage(FirebaseAuthException e) {

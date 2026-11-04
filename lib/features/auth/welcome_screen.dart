@@ -20,6 +20,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   final _password = TextEditingController();
   bool _loading = false;
   String? _error;
+  String? _info;
 
   @override
   void dispose() {
@@ -43,6 +44,35 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
       setState(() => _error = authErrorMessage(e));
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _forgotPassword() async {
+    final email = _email.text.trim();
+    if (email.isEmpty) {
+      setState(() {
+        _error = 'Enter your email first, then tap Forgot password.';
+        _info = null;
+      });
+      return;
+    }
+    try {
+      await ref.read(authRepositoryProvider).sendPasswordReset(email);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'invalid-email' || e.code == 'network-request-failed') {
+        setState(() {
+          _error = authErrorMessage(e);
+          _info = null;
+        });
+        return;
+      }
+    }
+    if (mounted) {
+      setState(() {
+        _error = null;
+        _info = 'If an account exists for that email, a reset link is on its '
+            'way. Check your spam folder too.';
+      });
     }
   }
 
@@ -108,6 +138,15 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                           (v == null || v.isEmpty) ? 'Enter your password' : null,
                       onFieldSubmitted: (_) => _submit(),
                     ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _forgotPassword,
+                        child: const Text('Forgot password?'),
+                      ),
+                    ),
+                    if (_info != null)
+                      Text(_info!, style: const TextStyle(color: kLime)),
                     if (_error != null) ...[
                       const SizedBox(height: 12),
                       Text(_error!, style: const TextStyle(color: kError)),

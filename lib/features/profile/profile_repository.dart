@@ -23,6 +23,13 @@ class ProfileRepository {
         .doc(uid)
         .set({'goal': goal.toMap()}, SetOptions(merge: true));
   }
+
+  Future<void> setHideWeight(String uid, bool value) {
+    return _db
+        .collection('users')
+        .doc(uid)
+        .set({'hideWeight': value}, SetOptions(merge: true));
+  }
 }
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
@@ -33,4 +40,9 @@ final profileProvider = StreamProvider<UserProfile?>((ref) {
   final uid = ref.watch(userProvider.select((u) => u.value?.uid));
   if (uid == null) return Stream.value(null);
   return ref.watch(profileRepositoryProvider).watchProfile(uid);
+});
+
+/// True when the user chose to hide their weight numbers.
+final hideWeightProvider = Provider<bool>((ref) {
+  return ref.watch(profileProvider).value?.hideWeight ?? false;
 });

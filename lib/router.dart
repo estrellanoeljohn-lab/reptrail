@@ -8,7 +8,8 @@ import 'features/auth/welcome_screen.dart';
 import 'features/checkin/checkin_screen.dart';
 import 'features/goal/goal_setup_screen.dart';
 import 'features/home/home_screen.dart';
-import 'features/placeholders/placeholder_screens.dart' as placeholders;
+import 'features/profile/me_screen.dart';
+import 'features/review/review_screen.dart';
 import 'features/profile/profile_repository.dart';
 import 'shell/app_shell.dart';
 import 'features/compare/compare_screen.dart';
@@ -66,6 +67,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const CheckinScreen(),
       ),
       GoRoute(
+        path: '/goal/edit',
+        builder: (context, state) => const GoalSetupScreen(editing: true),
+      ),
+      GoRoute(
+        path: '/review',
+        builder: (context, state) => const ReviewScreen(),
+      ),
+      GoRoute(
         path: '/focus/:area',
         builder: (context, state) =>
             FocusAreaScreen(area: state.pathParameters['area']!),
@@ -107,7 +116,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/me',
-                builder: (context, state) => const placeholders.MeScreen(),
+                builder: (context, state) => const MeScreen(),
               ),
             ],
           ),
