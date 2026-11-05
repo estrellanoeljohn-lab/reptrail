@@ -1,1 +1,36 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"reptrail-8dd26","appId":"1:1024897272667:android:764e7296d520945a38a87e","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"reptrail-8dd26","configurations":{"android":"1:1024897272667:android:764e7296d520945a38a87e","web":"1:1024897272667:web:67c05057ea3b0a5638a87e"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "reptrail-8dd26",
+          "appId": "1:1024897272667:android:764e7296d520945a38a87e",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "reptrail-8dd26",
+          "configurations": {
+            "android": "1:1024897272667:android:764e7296d520945a38a87e",
+            "web": "1:1024897272667:web:67c05057ea3b0a5638a87e"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
