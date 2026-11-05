@@ -28,6 +28,43 @@ List<Checkin> series() {
 }
 
 void main() {
+  test('first week falls back to its first trend and focus values', () {
+    final firstWeekGoal = Goal(
+      type: GoalType.cut,
+      startWeightKg: 65,
+      targetWeightKg: 60,
+      startDate: DateTime(2026, 11, 2),
+      targetDate: DateTime(2027, 1, 24),
+      focusAreas: const ['Arms'],
+    );
+    final review = buildWeekReview(
+      sorted: [
+        Checkin(date: DateTime(2026, 11, 2), weightKg: 65, arm: 31.5),
+        Checkin(date: DateTime(2026, 11, 3), weightKg: 64.8),
+        Checkin(date: DateTime(2026, 11, 5), weightKg: 64.6, arm: 31.9),
+      ],
+      goal: firstWeekGoal,
+      now: DateTime(2026, 11, 5),
+    );
+
+    expect(review.trendChangeKg, isNotNull);
+    expect(review.trendChangeKg, lessThan(0));
+    expect(review.focus.single.delta, closeTo(0.4, 0.001));
+  });
+
+  test('no check-ins gives only one check-in tip', () {
+    final review = buildWeekReview(
+      sorted: const [],
+      goal: goal(),
+      now: DateTime(2026, 11, 5),
+    );
+
+    expect(
+      nextWeekTips(review).where((tip) => tip.startsWith('Check in')).length,
+      1,
+    );
+  });
+
   test('the week starts on Monday', () {
     expect(weekStartOf(DateTime(2026, 11, 4)), DateTime(2026, 11, 2));
     expect(weekStartOf(DateTime(2026, 11, 8)), DateTime(2026, 11, 2));

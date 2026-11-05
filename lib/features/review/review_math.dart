@@ -74,7 +74,8 @@ WeekReview buildWeekReview({
   final trend = movingAverage(sorted);
   final prevEnd = DateTime(start.year, start.month, start.day - 1);
   final atEnd = trendOn(trend, asOf);
-  final atPrev = trendOn(trend, prevEnd);
+  final atPrev = trendOn(trend, prevEnd) ??
+      (inWeek.length >= 2 ? trendOn(trend, inWeek.first.date) : null);
   final trendChange = (inWeek.isNotEmpty && atEnd != null && atPrev != null)
       ? atEnd.weightKg - atPrev.weightKg
       : null;
@@ -92,7 +93,12 @@ WeekReview buildWeekReview({
     if (measure == null) continue;
     final measuredThisWeek = inWeek.any((c) => measure.pick(c) != null);
     final latest = valueOnOrBefore(sorted, asOf, measure.pick);
-    final before = valueOnOrBefore(sorted, prevEnd, measure.pick);
+    final previousValues =
+        inWeek.where((c) => measure.pick(c) != null).toList();
+    final before = valueOnOrBefore(sorted, prevEnd, measure.pick) ??
+        (previousValues.length >= 2
+            ? measure.pick(previousValues.first)
+            : null);
     if (measuredThisWeek && latest != null && before != null) {
       focus.add(FocusChange(
         area: area,
@@ -150,7 +156,9 @@ List<String> nextWeekTips(WeekReview r) {
     case PaceStatus.wrongDirection:
       tips.add('Your trend is moving away from your goal. Look at what changed this week.');
     case PaceStatus.notEnoughData:
-      tips.add('Check in on 3 or more days over a week to see your pace.');
+      if (r.checkinDays >= wanted) {
+        tips.add('Check in on 3 or more days over a week to see your pace.');
+      }
     case PaceStatus.noGuide:
       break;
   }

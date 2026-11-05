@@ -55,7 +55,9 @@ class HomeScreen extends ConsumerWidget {
       final measure = _measureFor(area);
       if (measure == null) continue;
       focusCards.add(_FocusCard(
-        title: '$area · ${measure.label.toLowerCase()}',
+        title: area.toLowerCase() == measure.label.toLowerCase()
+            ? area
+            : '$area · ${measure.label.toLowerCase()}',
         delta: measurementDelta(checkins, measure.pick),
       ));
     }
@@ -427,7 +429,11 @@ class _FocusCard extends StatelessWidget {
             style: TextStyle(
               fontSize: delta == null ? 14 : 22,
               fontWeight: FontWeight.w800,
-              color: delta == null ? kMuted : kLime,
+              color: delta == null
+                  ? kMuted
+                  : delta! < 0
+                  ? _amber
+                  : kLime,
             ),
           ),
         ],
